@@ -47,7 +47,7 @@ extern "C" {
 
 // matrix multiplication
 // mat [c] = double [alpha] * mat [a] * mat [b] + double [beta] * mat [c]
-extern void dgemm(const char *transa, const char *transb, const MKL_INT *m,
+extern void dgemm_(const char *transa, const char *transb, const MKL_INT *m,
                   const MKL_INT *n, const MKL_INT *k, const double *alpha,
                   const double *a, const MKL_INT *lda, const double *b,
                   const MKL_INT *ldb, const double *beta, double *c,
@@ -379,7 +379,7 @@ struct NDArray {
             // const double x = 1.0;
             // MKL_INT n = (MKL_INT)r.size(), inc = 1;
             // memcpy(r.data, data, sizeof(double) * n);
-            // dgemm("N", "N", &inc, &n, &inc, &x, &x, &inc, other.data, &inc,
+            // dgemm_("N", "N", &inc, &n, &inc, &x, &x, &inc, other.data, &inc,
             // &x, r.data, &inc);
             const size_t r_size = r.size();
             for (size_t i = 0; i < r_size; i++) {
@@ -439,7 +439,7 @@ struct NDArray {
             // const double x = 1.0;
             // MKL_INT n = (MKL_INT)size_right, incb = 1,
             //         inca = (MKL_INT)stride_right;
-            // dgemm("N", "N", &incb, &n, &incb, &alpha, &x, &incb,
+            // dgemm_("N", "N", &incb, &n, &incb, &alpha, &x, &incb,
             //       a.data + offset_a, &inca, &beta, bx.data + j * size_right,
             //       &incb);
             const double *__restrict__ a_data = a.data + offset_a;
@@ -571,7 +571,7 @@ struct NDArray {
 
         if (nbr == 0) {
             threading->activate_global_mkl();
-            dgemm(trans_b == 1 ? "n" : "t", trans_a == -1 ? "n" : "t",
+            dgemm_(trans_b == 1 ? "n" : "t", trans_a == -1 ? "n" : "t",
                   &b_free_dim, &a_free_dim, &ctr_dim, &alpha, bx.data, &ldb,
                   ax.data, &lda, &beta, c.data, &ldc);
             threading->activate_normal();
@@ -582,7 +582,7 @@ struct NDArray {
             int ntg = threading->activate_global();
 #pragma omp parallel for schedule(static) num_threads(ntg)
             for (MKL_INT ibr = 0; ibr < br_dim; ibr++)
-                dgemm(trans_b == 1 ? "n" : "t", trans_a == -1 ? "n" : "t",
+                dgemm_(trans_b == 1 ? "n" : "t", trans_a == -1 ? "n" : "t",
                       &b_free_dim, &a_free_dim, &ctr_dim, &alpha,
                       bx.data + stride_b * ibr, &ldb, ax.data + stride_a * ibr,
                       &lda, &beta, c.data + stride_c * ibr, &ldc);

@@ -45,7 +45,7 @@ extern "C" {
 
 // matrix multiplication
 // mat [c] = double [alpha] * mat [a] * mat [b] + double [beta] * mat [c]
-extern void dgemm(const char *transa, const char *transb, const MKL_INT *m,
+extern void dgemm_(const char *transa, const char *transb, const MKL_INT *m,
                   const MKL_INT *n, const MKL_INT *k, const double *alpha,
                   const double *a, const MKL_INT *lda, const double *b,
                   const MKL_INT *ldb, const double *beta, double *c,
@@ -77,7 +77,7 @@ inline void cblas_dgemm_batch(
                       ldc = ldc_Array[ig];
         const MKL_INT gsize = group_size[ig];
         for (MKL_INT j = 0; j < gsize; j++, i++)
-            dgemm(trb, tra, &n, &m, &k, &alpha, B_Array[i], &ldb, A_Array[i],
+            dgemm_(trb, tra, &n, &m, &k, &alpha, B_Array[i], &ldb, A_Array[i],
                   &lda, &beta, C_Array[i], &ldc);
     }
 }
@@ -111,7 +111,7 @@ inline void threaded_dgemm_batch(
         const MKL_INT lda = lda_Array[ig], ldb = ldb_Array[ig],
                       ldc = ldc_Array[ig];
         const MKL_INT gsize = group_size[ig];
-        dgemm(trb, tra, &n, &m, &k, &alpha, B_Array[i], &ldb, A_Array[i], &lda,
+        dgemm_(trb, tra, &n, &m, &k, &alpha, B_Array[i], &ldb, A_Array[i], &lda,
               &beta, C_Array[i], &ldc);
     }
 }
@@ -130,7 +130,7 @@ inline void single_dgemm(
     const double alpha = alpha_Array[ig] * scale, beta = beta_Array[ig];
     const MKL_INT lda = lda_Array[ig], ldb = ldb_Array[ig], ldc = ldc_Array[ig];
     const MKL_INT gsize = group_size[ig];
-    dgemm(trb, tra, &n, &m, &k, &alpha, B, &ldb, A, &lda, &beta, C, &ldc);
+    dgemm_(trb, tra, &n, &m, &k, &alpha, B, &ldb, A, &lda, &beta, C, &ldc);
 }
 
 // The parameters for a series of DGEMM operations

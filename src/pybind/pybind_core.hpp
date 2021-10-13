@@ -1243,7 +1243,7 @@ template <typename S = void> void bind_io(py::module &m) {
         threading_()->n_threads_mkl = n;
         threading_()->type = threading_()->type | ThreadingTypes::BatchedGEMM;
 #else
-        throw runtime_error("cannot set number of mkl threads.");
+       // throw runtime_error("cannot set number of mkl threads.");
 #endif
     });
     m.def("set_omp_num_threads", [](int n) {

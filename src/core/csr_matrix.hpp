@@ -106,7 +106,7 @@ struct CSRMatrixRef {
                 r.rows[ia] -= r.rows[ia] - (ia == 0 ? 0 : r.rows[ia - 1]);
         } else
             for (MKL_INT i = 0, inc = 1; i < n; i++)
-                dcopy(&m, data + i, &n, r.data + i * m, &inc);
+                dcopy_(&m, data + i, &n, r.data + i * m, &inc);
         return r;
     }
     double sparsity() const { return 1.0 - (double)nnz / (m * n); }
@@ -205,7 +205,7 @@ struct CSRMatrixRef {
         assert(m == n);
         if (nnz == size()) {
             const MKL_INT inc = 1, ind = n + 1;
-            dcopy(&m, data, &ind, x.data, &inc);
+            dcopy_(&m, data, &ind, x.data, &inc);
         } else {
             x.clear();
             if (nnz != 0)

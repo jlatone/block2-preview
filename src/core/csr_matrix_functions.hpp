@@ -104,20 +104,20 @@ struct CSRMatrixFunctions {
     static void copy(const CSRMatrixRef &a, const CSRMatrixRef &b) {
         const MKL_INT na = a.memory_size(), nb = b.memory_size(), inc = 1;
         assert(na == nb);
-        dcopy(&na, b.data, &inc, a.data, &inc);
+        dcopy_(&na, b.data, &inc, a.data, &inc);
     }
     static void iscale(const CSRMatrixRef &a, double scale) {
         const MKL_INT inc = 1;
-        dscal(&a.nnz, &scale, a.data, &inc);
+        dscal_(&a.nnz, &scale, a.data, &inc);
     }
     static double norm(const CSRMatrixRef &a) {
         const MKL_INT inc = 1;
-        return dnrm2(&a.nnz, a.data, &inc);
+        return dnrm2_(&a.nnz, a.data, &inc);
     }
     static double dot(const CSRMatrixRef &a, const CSRMatrixRef &b) {
         assert(a.m == b.m && a.n == b.n && a.nnz == b.nnz);
         const MKL_INT inc = 1;
-        return ddot(&a.nnz, a.data, &inc, b.data, &inc);
+        return ddot_(&a.nnz, a.data, &inc, b.data, &inc);
     }
     static double sparse_dot(const CSRMatrixRef &a, const CSRMatrixRef &b) {
         shared_ptr<VectorAllocator<double>> d_alloc =
@@ -327,7 +327,7 @@ struct CSRMatrixFunctions {
                 tcols.resize(jr), tdata.resize(jr);
                 memcpy(tcols.data(), c.cols + jp, jr * sizeof(MKL_INT));
                 memcpy(tdata.data(), c.data + jp, jr * sizeof(double));
-                dscal(&jr, &cfactor, tdata.data(), &inc);
+                dscal_(&jr, &cfactor, tdata.data(), &inc);
             }
             jp = arows[i], jr = i == am - 1 ? a.nnz : arows[i + 1];
             for (MKL_INT j = jp; j < jr; j++) {
@@ -400,7 +400,7 @@ struct CSRMatrixFunctions {
             MatrixRef at(nullptr, a.n, a.m);
             at.allocate(d_alloc);
             for (MKL_INT i = 0, inc = 1; i < at.m; i++)
-                dcopy(&at.n, a.data + i, &at.m, at.data + i * at.n, &inc);
+                dcopy_(&at.n, a.data + i, &at.m, at.data + i * at.n, &inc);
             sparse_status_t st =
                 mkl_sparse_d_mm(!conjb ? SPARSE_OPERATION_TRANSPOSE
                                        : SPARSE_OPERATION_NON_TRANSPOSE,
@@ -420,7 +420,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jbp = b.rows[ib], jbr = b.rows[ib + 1];
                 for (MKL_INT jb = jbp; jb < jbr; jb++) {
                     const double factor = scale * b.data[jb];
-                    daxpy(&a.m, &factor, &a(0, ib), &a.n, &c(0, b.cols[jb]),
+                    daxpy_(&a.m, &factor, &a(0, ib), &a.n, &c(0, b.cols[jb]),
                           &c.n);
                 }
             }
@@ -430,7 +430,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jbp = b.rows[ib], jbr = b.rows[ib + 1];
                 for (MKL_INT jb = jbp; jb < jbr; jb++) {
                     const double factor = scale * b.data[jb];
-                    daxpy(&a.n, &factor, &a(ib, 0), &inc, &c(0, b.cols[jb]),
+                    daxpy_(&a.n, &factor, &a(ib, 0), &inc, &c(0, b.cols[jb]),
                           &c.n);
                 }
             }
@@ -439,7 +439,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jbp = b.rows[ib], jbr = b.rows[ib + 1];
                 for (MKL_INT jb = jbp; jb < jbr; jb++) {
                     const double factor = scale * b.data[jb];
-                    daxpy(&a.m, &factor, &a(0, b.cols[jb]), &a.n, &c(0, ib),
+                    daxpy_(&a.m, &factor, &a(0, b.cols[jb]), &a.n, &c(0, ib),
                           &c.n);
                 }
             }
@@ -449,7 +449,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jbp = b.rows[ib], jbr = b.rows[ib + 1];
                 for (MKL_INT jb = jbp; jb < jbr; jb++) {
                     const double factor = scale * b.data[jb];
-                    daxpy(&a.n, &factor, &a(b.cols[jb], 0), &inc, &c(0, ib),
+                    daxpy_(&a.n, &factor, &a(b.cols[jb], 0), &inc, &c(0, ib),
                           &c.n);
                 }
             }
@@ -482,7 +482,7 @@ struct CSRMatrixFunctions {
             MatrixRef bt(nullptr, b.n, b.m);
             bt.allocate(d_alloc);
             for (MKL_INT i = 0, inc = 1; i < bt.m; i++)
-                dcopy(&bt.n, b.data + i, &bt.m, bt.data + i * bt.n, &inc);
+                dcopy_(&bt.n, b.data + i, &bt.m, bt.data + i * bt.n, &inc);
             sparse_status_t st =
                 mkl_sparse_d_mm(conja ? SPARSE_OPERATION_TRANSPOSE
                                       : SPARSE_OPERATION_NON_TRANSPOSE,
@@ -503,7 +503,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jap = a.rows[ia], jar = a.rows[ia + 1];
                 for (MKL_INT ja = jap; ja < jar; ja++) {
                     const double factor = scale * a.data[ja];
-                    daxpy(&b.n, &factor, &b(a.cols[ja], 0), &inc, &c(ia, 0),
+                    daxpy_(&b.n, &factor, &b(a.cols[ja], 0), &inc, &c(ia, 0),
                           &inc);
                 }
             }
@@ -512,7 +512,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jap = a.rows[ia], jar = a.rows[ia + 1];
                 for (MKL_INT ja = jap; ja < jar; ja++) {
                     const double factor = scale * a.data[ja];
-                    daxpy(&b.n, &factor, &b(ia, 0), &inc, &c(a.cols[ja], 0),
+                    daxpy_(&b.n, &factor, &b(ia, 0), &inc, &c(a.cols[ja], 0),
                           &inc);
                 }
             }
@@ -521,7 +521,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jap = a.rows[ia], jar = a.rows[ia + 1];
                 for (MKL_INT ja = jap; ja < jar; ja++) {
                     const double factor = scale * a.data[ja];
-                    daxpy(&b.m, &factor, &b(0, a.cols[ja]), &b.n, &c(ia, 0),
+                    daxpy_(&b.m, &factor, &b(0, a.cols[ja]), &b.n, &c(ia, 0),
                           &inc);
                 }
             }
@@ -530,7 +530,7 @@ struct CSRMatrixFunctions {
                 const MKL_INT jap = a.rows[ia], jar = a.rows[ia + 1];
                 for (MKL_INT ja = jap; ja < jar; ja++) {
                     const double factor = scale * a.data[ja];
-                    daxpy(&b.m, &factor, &b(0, ia), &b.n, &c(a.cols[ja], 0),
+                    daxpy_(&b.m, &factor, &b(0, ia), &b.n, &c(a.cols[ja], 0),
                           &inc);
                 }
             }
@@ -612,7 +612,7 @@ struct CSRMatrixFunctions {
         MatrixRef ad(nullptr, a.m, 1);
         ad.allocate(d_alloc);
         a.diag(ad);
-        dgemm("t", "n", &b.n, &a.n, &k, &scale, b.data, &ldb, ad.data, &lda,
+        dgemm_("t", "n", &b.n, &a.n, &k, &scale, b.data, &ldb, ad.data, &lda,
               &cfactor, c.data, &c.n);
         ad.deallocate(d_alloc);
     }
@@ -628,7 +628,7 @@ struct CSRMatrixFunctions {
         MatrixRef bd(nullptr, b.m, 1);
         bd.allocate(d_alloc);
         b.diag(bd);
-        dgemm("t", "n", &b.n, &a.n, &k, &scale, bd.data, &ldb, a.data, &lda,
+        dgemm_("t", "n", &b.n, &a.n, &k, &scale, bd.data, &ldb, a.data, &lda,
               &cfactor, c.data, &c.n);
         bd.deallocate(d_alloc);
     }
@@ -644,7 +644,7 @@ struct CSRMatrixFunctions {
         MatrixRef ad(nullptr, a.m, 1), bd(nullptr, b.m, 1);
         ad.allocate(d_alloc), bd.allocate(d_alloc);
         a.diag(ad), b.diag(bd);
-        dgemm("t", "n", &b.n, &a.n, &k, &scale, bd.data, &ldb, ad.data, &lda,
+        dgemm_("t", "n", &b.n, &a.n, &k, &scale, bd.data, &ldb, ad.data, &lda,
               &cfactor, c.data, &c.n);
         bd.deallocate(d_alloc), ad.deallocate(d_alloc);
     }

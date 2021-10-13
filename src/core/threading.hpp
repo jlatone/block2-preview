@@ -404,7 +404,7 @@ struct Threading {
             mkl_set_num_threads(n_threads_mkl);
             mkl_set_dynamic(0);
 #else
-            throw runtime_error("cannot set number of mkl threads.");
+            //throw runtime_error("cannot set number of mkl threads.");
 #endif
         }
         if (type & ThreadingTypes::Operator) {

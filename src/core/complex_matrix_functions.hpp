@@ -33,22 +33,22 @@ extern "C" {
 
 // vector scale
 // vector [sx] = double [sa] * vector [sx]
-extern void zdscal(const MKL_INT *n, const double *sa, complex<double> *sx,
+extern void zdscal_(const MKL_INT *n, const double *sa, complex<double> *sx,
                    const MKL_INT *incx) noexcept;
 
 // vector [sx] = complex [sa] * vector [sx]
-extern void zscal(const MKL_INT *n, const complex<double> *sa,
+extern void zscal_(const MKL_INT *n, const complex<double> *sa,
                   complex<double> *sx, const MKL_INT *incx) noexcept;
 
 // vector copy
 // vector [dy] = [dx]
-extern void zcopy(const MKL_INT *n, const complex<double> *dx,
+extern void zcopy_(const MKL_INT *n, const complex<double> *dx,
                   const MKL_INT *incx, complex<double> *dy,
                   const MKL_INT *incy) noexcept;
 
 // vector addition
 // vector [sy] = vector [sy] + complex [sa] * vector [sx]
-extern void zaxpy(const MKL_INT *n, const complex<double> *sa,
+extern void zaxpy_(const MKL_INT *n, const complex<double> *sa,
                   const complex<double> *sx, const MKL_INT *incx,
                   complex<double> *sy, const MKL_INT *incy) noexcept;
 
@@ -58,12 +58,12 @@ extern void zaxpy(const MKL_INT *n, const complex<double> *sa,
 //                   const complex<double> *zy, const MKL_INT *incy) noexcept;
 
 // Euclidean norm of a vector
-extern double dznrm2(const MKL_INT *n, const complex<double> *x,
+extern double dznrm2_(const MKL_INT *n, const complex<double> *x,
                      const MKL_INT *incx) noexcept;
 
 // matrix multiplication
 // mat [c] = complex [alpha] * mat [a] * mat [b] + complex [beta] * mat [c]
-extern void zgemm(const char *transa, const char *transb, const MKL_INT *m,
+extern void zgemm_(const char *transa, const char *transb, const MKL_INT *m,
                   const MKL_INT *n, const MKL_INT *k,
                   const complex<double> *alpha, const complex<double> *a,
                   const MKL_INT *lda, const complex<double> *b,
@@ -71,16 +71,16 @@ extern void zgemm(const char *transa, const char *transb, const MKL_INT *m,
                   complex<double> *c, const MKL_INT *ldc) noexcept;
 
 // LU factorization
-extern void zgetrf(const MKL_INT *m, const MKL_INT *n, complex<double> *a,
+extern void zgetrf_(const MKL_INT *m, const MKL_INT *n, complex<double> *a,
                    const MKL_INT *lda, MKL_INT *ipiv, MKL_INT *info);
 
 // matrix inverse
-extern void zgetri(const MKL_INT *n, complex<double> *a, const MKL_INT *lda,
+extern void zgetri_(const MKL_INT *n, complex<double> *a, const MKL_INT *lda,
                    MKL_INT *ipiv, complex<double> *work, const MKL_INT *lwork,
                    MKL_INT *info);
 
 // eigenvalue problem
-extern void zgeev(const char *jobvl, const char *jobvr, const MKL_INT *n,
+extern void zgeev_(const char *jobvl, const char *jobvr, const MKL_INT *n,
                   complex<double> *a, const MKL_INT *lda, complex<double> *w,
                   complex<double> *vl, const MKL_INT *ldvl, complex<double> *vr,
                   const MKL_INT *ldvr, complex<double> *work,
@@ -88,19 +88,19 @@ extern void zgeev(const char *jobvl, const char *jobvr, const MKL_INT *n,
 
 // matrix-vector multiplication
 // vec [y] = complex [alpha] * mat [a] * vec [x] + complex [beta] * vec [y]
-extern void zgemv(const char *trans, const MKL_INT *m, const MKL_INT *n,
+extern void zgemv_(const char *trans, const MKL_INT *m, const MKL_INT *n,
                   const complex<double> *alpha, const complex<double> *a,
                   const MKL_INT *lda, const complex<double> *x,
                   const MKL_INT *incx, const complex<double> *beta,
                   complex<double> *y, const MKL_INT *incy) noexcept;
 
 // linear system a * x = b
-extern void zgesv(const MKL_INT *n, const MKL_INT *nrhs, complex<double> *a,
+extern void zgesv_(const MKL_INT *n, const MKL_INT *nrhs, complex<double> *a,
                   const MKL_INT *lda, MKL_INT *ipiv, complex<double> *b,
                   const MKL_INT *ldb, MKL_INT *info);
 
 // least squares problem a * x = b
-extern void zgels(const char *trans, const MKL_INT *m, const MKL_INT *n,
+extern void zgels_(const char *trans, const MKL_INT *m, const MKL_INT *n,
                   const MKL_INT *nrhs, complex<double> *a, const MKL_INT *lda,
                   complex<double> *b, const MKL_INT *ldb, complex<double> *work,
                   const MKL_INT *lwork, MKL_INT *info);
@@ -135,12 +135,12 @@ struct ComplexMatrixFunctions {
                      const MKL_INT inca = 1, const MKL_INT incb = 1) {
         assert(a.m == b.m && a.n == b.n);
         const MKL_INT n = a.m * a.n;
-        zcopy(&n, b.data, &incb, a.data, &inca);
+        zcopy_(&n, b.data, &incb, a.data, &inca);
     }
     static void iscale(const ComplexMatrixRef &a, complex<double> scale,
                        const MKL_INT inc = 1) {
         MKL_INT n = a.m * a.n;
-        zscal(&n, &scale, a.data, &inc);
+        zscal_(&n, &scale, a.data, &inc);
     }
     // a = a + scale * op(b)
     static void iadd(const ComplexMatrixRef &a, const ComplexMatrixRef &b,
@@ -149,9 +149,9 @@ struct ComplexMatrixFunctions {
         assert(a.m == b.m && a.n == b.n);
         MKL_INT n = a.m * a.n, inc = 1;
         if (cfactor == 1.0)
-            zaxpy(&n, &scale, b.data, &inc, a.data, &inc);
+            zaxpy_(&n, &scale, b.data, &inc, a.data, &inc);
         else
-            zgemm("N", "N", &inc, &n, &inc, &scale, &x, &inc, b.data, &inc,
+            zgemm_("N", "N", &inc, &n, &inc, &scale, &x, &inc, b.data, &inc,
                   &cfactor, a.data, &inc);
     }
     // dot product (a ^ H, b)
@@ -163,13 +163,13 @@ struct ComplexMatrixFunctions {
         complex<double> r;
         // zdotc can sometimes return zero
         // zdotc(&r, &n, a.data, &inc, b.data, &inc);
-        zgemm("C", "N", &inc, &inc, &n, &x, a.data, &n, b.data, &n, &zz, &r,
+        zgemm_("C", "N", &inc, &inc, &n, &x, a.data, &n, b.data, &n, &zz, &r,
               &inc);
         return r;
     }
     static double norm(const ComplexMatrixRef &a) {
         MKL_INT n = a.m * a.n, inc = 1;
-        return dznrm2(&n, a.data, &inc);
+        return dznrm2_(&n, a.data, &inc);
     }
     // eigenvectors are row right-vectors: A u(j) = lambda(j) u(j)
     static void eig(const ComplexMatrixRef &a, const ComplexDiagonalMatrix &w) {
@@ -181,7 +181,7 @@ struct ComplexMatrixFunctions {
         double *rwork = d_alloc->allocate(a.m * 2);
         complex<double> *vl =
             (complex<double> *)d_alloc->allocate(a.m * a.n * 2);
-        zgeev("V", "N", &a.n, a.data, &a.n, w.data, vl, &a.n, nullptr, &a.n,
+        zgeev_("V", "N", &a.n, a.data, &a.n, w.data, vl, &a.n, nullptr, &a.n,
               work, &lwork, rwork, &info);
         assert(info == 0);
         for (size_t k = 0; k < a.m * a.n; k++)
@@ -198,9 +198,9 @@ struct ComplexMatrixFunctions {
         ipiv.reserve(a.m);
         MKL_INT lwork = 34 * a.n, info = -1;
         work.reserve(lwork);
-        zgetrf(&a.m, &a.n, a.data, &a.m, ipiv.data(), &info);
+        zgetrf_(&a.m, &a.n, a.data, &a.m, ipiv.data(), &info);
         assert(info == 0);
-        zgetri(&a.n, a.data, &a.m, ipiv.data(), work.data(), &lwork, &info);
+        zgetri_(&a.n, a.data, &a.m, ipiv.data(), work.data(), &lwork, &info);
         assert(info == 0);
     }
     // least squares problem a x = b
@@ -216,14 +216,14 @@ struct ComplexMatrixFunctions {
         work.reserve(lwork);
         atr.reserve(a.size());
         xtr.reserve(mn);
-        zcopy(&a.m, b.data, &nrhs, xtr.data(), &nrhs);
+        zcopy_(&a.m, b.data, &nrhs, xtr.data(), &nrhs);
         for (MKL_INT i = 0; i < x.m; i++)
-            zcopy(&a.m, a.data + i, &a.n, atr.data() + i * a.m, &nrhs);
-        zgels("N", &a.m, &x.m, &nrhs, atr.data(), &a.m, xtr.data(), &mn,
+            zcopy_(&a.m, a.data + i, &a.n, atr.data() + i * a.m, &nrhs);
+        zgels_("N", &a.m, &x.m, &nrhs, atr.data(), &a.m, xtr.data(), &mn,
               work.data(), &lwork, &info);
         assert(info == 0);
-        zcopy(&x.m, xtr.data(), &nrhs, x.data, &nrhs);
-        return nr > 0 ? dznrm2(&nr, xtr.data() + x.m, &nrhs) : 0;
+        zcopy_(&x.m, xtr.data(), &nrhs, x.data, &nrhs);
+        return nr > 0 ? dznrm2_(&nr, xtr.data() + x.m, &nrhs) : 0;
     }
     // matrix logarithm using diagonalization
     static void logarithm(const ComplexMatrixRef &a) {
@@ -251,7 +251,7 @@ struct ComplexMatrixFunctions {
     static void linear(const ComplexMatrixRef &a, const ComplexMatrixRef &b) {
         assert(a.m == a.n && a.m == b.n);
         MKL_INT *work = (MKL_INT *)ialloc->allocate(a.n * _MINTSZ), info = -1;
-        zgesv(&a.m, &b.m, a.data, &a.n, work, b.data, &a.n, &info);
+        zgesv_(&a.m, &b.m, a.data, &a.n, work, b.data, &a.n, &info);
         assert(info == 0);
         ialloc->deallocate(work, a.n * _MINTSZ);
     }
@@ -265,19 +265,19 @@ struct ComplexMatrixFunctions {
         // use no-transpose-rule to fix it
         if (!conja && !conjb) {
             assert(a.n >= b.m && c.m == a.m && c.n >= b.n);
-            zgemm("n", "n", &b.n, &c.m, &b.m, &scale, b.data, &b.n, a.data,
+            zgemm_("n", "n", &b.n, &c.m, &b.m, &scale, b.data, &b.n, a.data,
                   &a.n, &cfactor, c.data, &c.n);
         } else if (!conja && conjb) {
             assert(a.n >= b.n && c.m == a.m && c.n >= b.m);
-            zgemm("t", "n", &b.m, &c.m, &b.n, &scale, b.data, &b.n, a.data,
+            zgemm_("t", "n", &b.m, &c.m, &b.n, &scale, b.data, &b.n, a.data,
                   &a.n, &cfactor, c.data, &c.n);
         } else if (conja && !conjb) {
             assert(a.m == b.m && c.m <= a.n && c.n >= b.n);
-            zgemm("n", "t", &b.n, &c.m, &b.m, &scale, b.data, &b.n, a.data,
+            zgemm_("n", "t", &b.n, &c.m, &b.m, &scale, b.data, &b.n, a.data,
                   &a.n, &cfactor, c.data, &c.n);
         } else {
             assert(a.m == b.n && c.m <= a.n && c.n >= b.m);
-            zgemm("t", "t", &b.m, &c.m, &b.n, &scale, b.data, &b.n, a.data,
+            zgemm_("t", "t", &b.m, &c.m, &b.n, &scale, b.data, &b.n, a.data,
                   &a.n, &cfactor, c.data, &c.n);
         }
     }
@@ -327,7 +327,7 @@ struct ComplexMatrixFunctions {
             work[icoef + k] =
                 work[icoef + k - 1] * (double)(i - k) / double(k * (j - k));
         // H2 = scale2*H*H ...
-        zgemm("n", "n", &m, &m, &m, &scale2, h, &ldh, h, &ldh, &zero,
+        zgemm_("n", "n", &m, &m, &m, &scale2, h, &ldh, h, &ldh, &zero,
               work + ih2, &m);
         // initialize p (numerator) and q (denominator)
         memset(work + ip, 0, sizeof(complex<double>) * mm * 2);
@@ -339,7 +339,7 @@ struct ComplexMatrixFunctions {
         MKL_INT iodd = 1;
         for (MKL_INT k = ideg - 1; k > 0; k--) {
             MKL_INT iused = iodd * iq + (1 - iodd) * ip;
-            zgemm("n", "n", &m, &m, &m, &one, work + iused, &m, work + ih2, &m,
+            zgemm_("n", "n", &m, &m, &m, &one, work + iused, &m, work + ih2, &m,
                   &zero, work + ifree, &m);
             for (MKL_INT j = 0; j < m; j++)
                 work[ifree + j * (m + 1)] += work[icoef + k - 1];
@@ -350,29 +350,29 @@ struct ComplexMatrixFunctions {
         }
         // Obtain (+/-)(I + 2*(p\q))
         MKL_INT *iqp = iodd ? &iq : &ip;
-        zgemm("n", "n", &m, &m, &m, &scale, work + *iqp, &m, h, &ldh, &zero,
+        zgemm_("n", "n", &m, &m, &m, &scale, work + *iqp, &m, h, &ldh, &zero,
               work + ifree, &m);
         *iqp = ifree;
-        zaxpy(&mm, &mone, work + ip, &inc, work + iq, &inc);
-        zgesv(&m, &m, work + iq, &m, (MKL_INT *)work + ih2, work + ip, &m,
+        zaxpy_(&mm, &mone, work + ip, &inc, work + iq, &inc);
+        zgesv_(&m, &m, work + iq, &m, (MKL_INT *)work + ih2, work + ip, &m,
               &iflag);
         if (iflag != 0) {
             cerr << "Problem in DGESV in expo pade" << endl;
             abort();
         }
-        zdscal(&mm, &dtwo, work + ip, &inc);
+        zdscal_(&mm, &dtwo, work + ip, &inc);
         for (MKL_INT j = 0; j < m; j++)
             work[ip + j * (m + 1)] = work[ip + j * (m + 1)] + one;
         MKL_INT iput = ip;
         if (ns == 0 && iodd) {
-            zdscal(&mm, &dmone, work + ip, &inc);
+            zdscal_(&mm, &dmone, work + ip, &inc);
         } else {
             // squaring : exp(t*H) = (exp(t*H))^(2^ns)
             iodd = 1;
             for (MKL_INT k = 0; k < ns; k++) {
                 MKL_INT iget = iodd * ip + (1 - iodd) * iq;
                 iput = (1 - iodd) * ip + iodd * iq;
-                zgemm("n", "n", &m, &m, &m, &one, work + iget, &m, work + iget,
+                zgemm_("n", "n", &m, &m, &m, &one, work + iget, &m, work + iget,
                       &m, &zero, work + iput, &m);
                 iodd = 1 - iodd;
             }
@@ -423,8 +423,8 @@ struct ComplexMatrixFunctions {
             tol = sqrt(eps);
         double rndoff = eps * anorm, break_tol = 1E-7;
         double sgn = t >= 0 ? 1.0 : -1.0;
-        zcopy(&n, v, &inc, w, &inc);
-        double beta = dznrm2(&n, w, &inc), vnorm = beta, hump = beta, avnorm;
+        zcopy_(&n, v, &inc, w, &inc);
+        double beta = dznrm2_(&n, w, &inc), vnorm = beta, hump = beta, avnorm;
         // obtain the very first stepsize
         double xm = 1.0 / (double)m, p1;
         p1 = tol * pow((m + 1) / 2.72, m + 1) * sqrt(2.0 * 3.14 * (m + 1));
@@ -452,11 +452,11 @@ struct ComplexMatrixFunctions {
                         hij = -complex_dot(
                             ComplexMatrixRef(work + iv + i * n, n, 1),
                             ComplexMatrixRef(work + j1v, n, 1));
-                        zaxpy(&n, &hij, work + iv + i * n, &inc, work + j1v,
+                        zaxpy_(&n, &hij, work + iv + i * n, &inc, work + j1v,
                               &inc);
                         work[ih + j * mh + i] = -hij;
                     }
-                    hj1j = dznrm2(&n, work + j1v, &inc);
+                    hj1j = dznrm2_(&n, work + j1v, &inc);
                 }
                 if (pcomm != nullptr)
                     pcomm->broadcast(&hj1j, 1, pcomm->root);
@@ -473,7 +473,7 @@ struct ComplexMatrixFunctions {
                 if (pcomm == nullptr || pcomm->root == pcomm->rank) {
                     work[ih + j * mh + j + 1] = (complex<double>)hj1j;
                     hj1j = 1.0 / hj1j;
-                    zdscal(&n, &hj1j, work + j1v, &inc);
+                    zdscal_(&n, &hj1j, work + j1v, &inc);
                 }
                 if (pcomm != nullptr)
                     pcomm->broadcast(work + j1v, n, pcomm->root);
@@ -483,7 +483,7 @@ struct ComplexMatrixFunctions {
                 nmult++;
                 op(work + j1v - n, work + j1v);
                 if (pcomm == nullptr || pcomm->root == pcomm->rank)
-                    avnorm = dznrm2(&n, work + j1v, &inc);
+                    avnorm = dznrm2_(&n, work + j1v, &inc);
             }
             MKL_INT ireject = 0;
             if (pcomm == nullptr || pcomm->root == pcomm->rank) {
@@ -546,9 +546,9 @@ struct ComplexMatrixFunctions {
                 // now update w = beta*V*exp(t_step*H)*e1 and the hump
                 mx = mbrkdwn + max((MKL_INT)0, k1 - 1);
                 complex<double> hjj = (complex<double>)beta;
-                zgemv("n", &n, &mx, &hjj, work + iv, &n, work + iexph, &inc,
+                zgemv_("n", &n, &mx, &hjj, work + iv, &n, work + iexph, &inc,
                       &zero, w, &inc);
-                beta = dznrm2(&n, w, &inc);
+                beta = dznrm2_(&n, w, &inc);
                 hump = max(hump, beta);
                 // suggested value for the next stepsize
                 t_new = gamma * t_step * pow(t_step * tol / err_loc, xm);
@@ -659,7 +659,7 @@ struct ComplexMatrixFunctions {
             static complex<double> x = 1.0;
             op(ComplexMatrixRef(a, vm, vn), ComplexMatrixRef(b, vm, vn));
             const complex<double> cconsta = consta * tt;
-            zgemm("n", "n", &inc, &n, &inc, &x, &cconsta, &inc, a, &inc, &tt, b,
+            zgemm_("n", "n", &inc, &n, &inc, &x, &cconsta, &inc, a, &inc, &tt, b,
                   &inc);
         };
         MKL_INT m = min((MKL_INT)deflation_max_size, n - 1);

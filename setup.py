@@ -39,9 +39,11 @@ class CMakeBuild(build_ext):
                 '-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}'.format(
                     cfg.upper(), self.build_temp),
                 '-DPYTHON_EXECUTABLE_HINT={}'.format(sys.executable),
-                '-DUSE_MKL=ON',
+                '-DUSE_MKL=OFF',
+		'-DMPI=ON',
                 '-DBUILD_LIB=ON',
-                '-DLARGE_BOND=ON'
+                '-DLARGE_BOND=ON',
+		'-DBLA_VENDOR=OpenBLAS'
             ]
 
             # We can handle some platform-specific settings at our discretion
@@ -68,7 +70,7 @@ class CMakeBuild(build_ext):
             subprocess.check_call(['cmake', ext.cmake_lists_dir] + cmake_args,
                                   cwd=self.build_temp)
 
-            subprocess.check_call(['cmake', '--build', '.', '--config', cfg, '--', '--jobs=4'],
+            subprocess.check_call(['cmake', '--build', '.', '--config', cfg, '--', '--jobs=100'],
                                   cwd=self.build_temp)
 
 
@@ -86,11 +88,7 @@ setup(name='block2',
       author_email='hczhai@ucla.edu',
       url='https://github.com/block-hczhai/block2-preview',
       install_requires=[
-          "mkl==2019",
-          "mkl-include",
-          "intel-openmp",
           "numpy",
-          "cmake==3.17",
           "scipy",
           "psutil",
           "pybind11"
